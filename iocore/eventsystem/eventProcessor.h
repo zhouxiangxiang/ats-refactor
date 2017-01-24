@@ -1,10 +1,9 @@
 #ifndef _I_EventProcessor_h_
 #define _I_EventProcessor_h_
 
-// #include "libts.h"
-#include "I_Continuation.h"
-#include "I_Processor.h"
-#include "I_Event.h"
+#include "continuation.h"
+#include "processor.h"
+#include "event.h"
 
 #ifdef TS_MAX_THREADS_IN_EACH_THREAD_TYPE
 const int MAX_THREADS_IN_EACH_TYPE = TS_MAX_THREADS_IN_EACH_THREAD_TYPE;

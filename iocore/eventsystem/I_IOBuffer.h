@@ -2,34 +2,16 @@
 
   I/O classes
 
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-
   @section watermark Watermark
 
   Watermarks can be used as an interface between the data transferring
-  layer (VConnection) and the user layer (a state machine).  Watermarks
-  should be used when you need to have at least a certain amount of data
-  to make some determination.  For example, when parsing a string, one
-  might wish to ensure that an entire line will come in before consuming
-  the data.  In such a case, the water_mark should be set to the largest
-  possible size of the string. (appropriate error handling should take
-  care of exessively long strings).
+  layer (VConnection) and the user layer (a state machine).
+  Watermarks should be used when you need to have at least a certain amount of
+  data to make some determination.
+  For example, when parsing a string, one might wish to ensure that an entire
+  line will come in before consuming the data.  In such a case, the water_mark
+  should be set to the largest possible size of the string. (appropriate error
+  handling should take care of exessively long strings).
 
   In all other cases, especially when all data will be consumed, the
   water_mark should be set to 0 (the default).
@@ -48,9 +30,6 @@ class MIOBuffer;
 class IOBufferReader;
 class VIO;
 
-// Removing this optimization since this is breaking WMT over HTTP
-//#define WRITE_AND_TRANSFER
-
 inkcoreapi extern int64_t max_iobuffer_size;
 extern int64_t default_small_iobuffer_size;
 extern int64_t default_large_iobuffer_size; // matched to size of OS buffers
@@ -59,8 +38,7 @@ extern int64_t default_large_iobuffer_size; // matched to size of OS buffers
 #define TRACK_BUFFER_USER 1
 #endif
 
-enum AllocType
-{
+enum AllocType {
   NO_ALLOC,
   FAST_ALLOCATED,
   XMALLOCED,
@@ -79,12 +57,8 @@ enum AllocType
 #define DEFAULT_BUFFER_ALIGNMENT     8192       // should be disk/page size
 #define DEFAULT_BUFFER_BASE_SIZE     128
 
-////////////////////////////////////////////////
-// These are defines so that code that used 2 //
-// for buffer size index when 2 was 2K will   //
-// still work if it uses BUFFER_SIZE_INDEX_2K //
-// instead.                                   //
-////////////////////////////////////////////////
+// These are defines so that code that used 2 for buffer size index when 2 was
+// 2K will still work if it uses BUFFER_SIZE_INDEX_2K instead.
 #define BUFFER_SIZE_INDEX_128           0
 #define BUFFER_SIZE_INDEX_256           1
 #define BUFFER_SIZE_INDEX_512           2
@@ -215,8 +189,7 @@ public:
     @return address of the memory handled by this IOBufferData.
 
   */
-  char *data()
-  {
+  char *data() {
     return _data;
   }
 
@@ -227,8 +200,7 @@ public:
     parameter to functions requiring a char*.
 
   */
-  operator  char *()
-  {
+  operator  char *() {
     return _data;
   }
 
@@ -277,9 +249,8 @@ public:
   }
 
 private:
-  // declaration only
-  IOBufferData(const IOBufferData &);
-  IOBufferData & operator =(const IOBufferData &);
+  IOBufferData(const IOBufferData &)=delete;
+  IOBufferData & operator =(const IOBufferData &)=delete;
 };
 
 inkcoreapi extern ClassAllocator<IOBufferData> ioDataAllocator;
@@ -292,8 +263,7 @@ inkcoreapi extern ClassAllocator<IOBufferData> ioDataAllocator;
   block is both in use and usable by the MIOBuffer it is attached to.
 
 */
-class IOBufferBlock:public RefCountObj
-{
+class IOBufferBlock:public RefCountObj {
 public:
   /**
     Access the actual data. Provides access to rhe underlying data
@@ -302,8 +272,7 @@ public:
     @return pointer to the underlying data.
 
   */
-  char *buf()
-  {
+  char *buf() {
     return data->_data;
   }
 
@@ -314,8 +283,7 @@ public:
     @return pointer to the start of the inuse section.
 
   */
-  char *start()
-  {
+  char *start() {
     return _start;
   }
 
@@ -326,8 +294,7 @@ public:
     @return pointer to the end of the inuse portion of the block.
 
   */
-  char *end()
-  {
+  char *end() {
     return _end;
   }
 
@@ -336,8 +303,7 @@ public:
     represented by this block.
 
   */
-  char *buf_end()
-  {
+  char *buf_end() {
     return _buf_end;
   }
 
@@ -347,8 +313,7 @@ public:
     @return bytes occupied by the inuse area.
 
   */
-  int64_t size()
-  {
+  int64_t size() {
     return (int64_t) (_end - _start);
   }
 
@@ -359,8 +324,7 @@ public:
     @return bytes available for reading from the inuse area.
 
   */
-  int64_t read_avail()
-  {
+  int64_t read_avail() {
     return (int64_t) (_end - _start);
   }
 
@@ -370,8 +334,7 @@ public:
 
     @return space available for writing in this IOBufferBlock.
   */
-  int64_t write_avail()
-  {
+  int64_t write_avail() {
     return (int64_t) (_buf_end - _end);
   }
 
@@ -385,8 +348,7 @@ public:
       IOBufferBlock.
 
   */
-  int64_t block_size()
-  {
+  int64_t block_size() {
     return data->block_size();
   }
 
@@ -537,8 +499,7 @@ extern inkcoreapi ClassAllocator<IOBufferBlock> ioBlockAllocator;
   can be removed from the buffer.
 
 */
-class IOBufferReader
-{
+class IOBufferReader {
 public:
 
   /**
@@ -805,8 +766,7 @@ public:
   one will have ownership for writing.
 
 */
-class MIOBuffer
-{
+class MIOBuffer {
 public:
 
   /**
@@ -915,8 +875,7 @@ public:
     block list.
 
   */
-  IOBufferBlock *first_write_block()
-  {
+  IOBufferBlock *first_write_block() {
     if (_writer) {
       if (_writer->next && !_writer->write_avail())
         return _writer->next;

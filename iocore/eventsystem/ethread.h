@@ -302,8 +302,7 @@ public:
   which users might want to define for themselves.
 
 */
-class ink_dummy_for_new
-{
+class ink_dummy_for_new {
 };
 
 inline void *operator
