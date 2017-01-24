@@ -1,32 +1,8 @@
-/** @file
-
-  Generic interface which enables any event or async activity to be cancelled
-
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-
- */
-
 #ifndef _I_Action_h_
 #define _I_Action_h_
 
-#include "libts.h"
-#include "I_Thread.h"
+#include <mutex>
+#include <cassert>
 #include "I_Continuation.h"
 
 /**
@@ -85,11 +61,8 @@
   completed or it has cancelled the Action.
 
 */
-class Action
-{
-
+class Action {
 public:
-
   /**
     Contination that initiated this action.
 
@@ -99,8 +72,7 @@ public:
     directly by the state machine.
 
   */
-  Continuation * continuation;
-
+  Continuation* continuation;
 
   /**
     Reference to the Continuation's lock.
@@ -111,7 +83,7 @@ public:
     modified directly by the state machine.
 
   */
-  Ptr<ProxyMutex> mutex;
+  std::mutex* mutex;
 
   /**
     Internal flag used to indicate whether the action has been
@@ -137,9 +109,9 @@ public:
 
   */
   virtual void cancel(Continuation * c = NULL) {
-    ink_assert(!c || c == continuation);
+    assert(!c || c == continuation);
 #ifdef DEBUG
-    ink_assert(!cancelled);
+    assert(!cancelled);
     cancelled = true;
 #else
     if (!cancelled)
@@ -159,9 +131,9 @@ public:
 
   */
   void cancel_action(Continuation * c = NULL) {
-    ink_assert(!c || c == continuation);
+    assert(!c || c == continuation);
 #ifdef DEBUG
-    ink_assert(!cancelled);
+    assert(!cancelled);
     cancelled = true;
 #else
     if (!cancelled)
@@ -169,8 +141,7 @@ public:
 #endif
   }
 
-  Continuation *operator =(Continuation * acont)
-  {
+  Continuation* operator=(Continuation * acont) {
     continuation = acont;
     if (acont)
       mutex = acont->mutex;
@@ -185,13 +156,11 @@ public:
     Continuation.
 
   */
-Action():continuation(NULL), cancelled(false) {
+  Action():continuation(NULL), cancelled(false) {
   }
 
-#if defined(__GNUC__)
-  virtual ~ Action() {
+  virtual ~Action() {
   }
-#endif
 };
 
 #define ACTION_RESULT_NONE           MAKE_ACTION_RESULT(0)

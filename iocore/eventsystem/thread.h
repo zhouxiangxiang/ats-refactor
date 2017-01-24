@@ -2,24 +2,6 @@
 
   Thread
 
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-
   @section details Details
 
   Thread class provides the basic functionality for threads. Typically,
@@ -53,26 +35,24 @@
   EThread key). This will hopefully make the use of this_ethread() safer.
   Note that an event created with EThread can also call this_thread(),
   in which case, it will get a pointer to Thread (rather than to EThread).
-
  */
 
 #ifndef _I_Thread_h
 #define _I_Thread_h
 
-#if !defined(_I_EventSystem_h) && !defined(_P_EventSystem_h)
-#error "include I_EventSystem.h or P_EventSystem.h"
--- -include I_Event.h or P_Event.h
-#endif
-#include "libts.h"
-#include "I_ProxyAllocator.h"
+#include <memory>
+#include <mutex>
+#include <thread>
+
+#include "./headers.h"
+
 class Thread;
-class ProxyMutex;
 
 #define THREADAPI
-#define THREADAPI_RETURN_TYPE void *
+#define THREADAPI_RETURN_TYPE void*
 typedef THREADAPI_RETURN_TYPE(THREADAPI * ThreadFunction) (void *arg);
 
-extern ProxyMutex *global_mutex;
+extern std::mutex* global_mutex;
 
 static const int MAX_THREAD_NAME_LENGTH  = 16;
 static const int DEFAULT_STACKSIZE = 1048576; // 1MB
@@ -90,22 +70,41 @@ static const int DEFAULT_STACKSIZE = 1048576; // 1MB
   instantiated after some thread startup mechanism exposed by a processor,
   but even then you would probably deal with processor functions and
   not the Thread object itself.
-
 */
-class Thread
-{
+class Thread: std::thread {
 public:
+  Thread();
+  virtual ~Thread();
 
-  /*-------------------------------------------*\
-  | Common Interface                            |
-  \*-------------------------------------------*/
+  ink_thread start(const char* name,
+                   size_t stacksize=DEFAULT_STACKSIZE,
+                   ThreadFunction f=NULL,
+                   void *a=NULL);
 
+  virtual void execute() {
+  }
+
+  static ink_hrtime get_based_hrtime() {
+      return Thread::cur_time;
+  }
+
+  static ink_hrtime get_hrtime() {
+      return Thread::cur_time;
+  }
+
+  void set_specific();
+  Thread* this_thread() const;
+
+  // prevent unauthorized copies
+  Thread(const Thread &)=delete;
+  Thread& operator=(const Thread &)=delete;
+
+public:
   /**
     System-wide thread identifier. The thread identifier is represented
     by the platform independent type ink_thread and it is the system-wide
     value assigned to each thread. It is exposed as a convenience for
     processors and you should not modify it directly.
-
   */
   ink_thread tid;
 
@@ -113,51 +112,13 @@ public:
     Thread lock to ensure atomic operations. The thread lock available
     to derived classes to ensure atomic operations and protect critical
     regions. Do not modify this member directly.
-
   */
-  ProxyMutex *mutex;
-
-  // PRIVATE
-  void set_specific();
-  Thread();
-  virtual ~ Thread();
+  std::mutex* p_mutex;
 
   static ink_hrtime cur_time;
-  inkcoreapi static ink_thread_key thread_data_key;
-  Ptr<ProxyMutex> mutex_ptr;
-
-  // For THREAD_ALLOC
-  ProxyAllocator eventAllocator;
-  ProxyAllocator netVCAllocator;
-  ProxyAllocator sslNetVCAllocator;
-  ProxyAllocator httpClientSessionAllocator;
-  ProxyAllocator httpServerSessionAllocator;
-  ProxyAllocator hdrHeapAllocator;
-  ProxyAllocator strHeapAllocator;
-  ProxyAllocator cacheVConnectionAllocator;
-  ProxyAllocator openDirEntryAllocator;
-  ProxyAllocator ramCacheCLFUSEntryAllocator;
-  ProxyAllocator ramCacheLRUEntryAllocator;
-  ProxyAllocator evacuationBlockAllocator;
-  ProxyAllocator ioDataAllocator;
-  ProxyAllocator ioAllocator;
-  ProxyAllocator ioBlockAllocator;
-  ProxyAllocator ioBufAllocator[DEFAULT_BUFFER_SIZES];
-
+  static thread_local Thread* s_thread_data_key;
 private:
-  // prevent unauthorized copies (Not implemented)
-  Thread(const Thread &);
-  Thread & operator =(const Thread &);
-
-public:
-  ink_thread start(const char* name, size_t stacksize=DEFAULT_STACKSIZE, ThreadFunction f=NULL, void *a=NULL);
-
-  virtual void execute()
-  {  }
+  std::shared_ptr<std::mutex> mutex_ptr;
 };
-
-extern ink_hrtime ink_get_hrtime();
-extern ink_hrtime ink_get_based_hrtime();
-extern Thread *this_thread();
 
 #endif /*_I_Thread_h*/

@@ -1,50 +1,24 @@
-/** @file
-
-  A brief file description
-
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-
- */
-
 #ifndef _Event_h_
 #define _Event_h_
 
-#include "libts.h"
+#include <cstdint>
+#include <list>
 #include "I_Action.h"
 
-//
-//  Defines
-//
+using ink_hrtime = std::int64_t;
 
+//  Defines
 #define MAX_EVENTS_PER_THREAD     100000
 
 // Events
-
-#define EVENT_NONE                CONTINUATION_EVENT_NONE       // 0
-#define EVENT_IMMEDIATE           1
-#define EVENT_INTERVAL            2
-#define EVENT_ERROR               3
-#define EVENT_CALL                4     // used internally in state machines
-#define EVENT_POLL                5     // negative event; activated on poll or epoll
+#define EVENT_NONE             CONTINUATION_EVENT_NONE   // 0
+#define EVENT_IMMEDIATE        1
+#define EVENT_INTERVAL         2
+#define EVENT_ERROR            3
+#define EVENT_CALL             4 // used internally in state machines
+#define EVENT_POLL             5 // negative event; activated on poll or epoll
 
 // Event callback return functions
-
 #define EVENT_DONE                CONTINUATION_DONE     // 0
 #define EVENT_CONT                CONTINUATION_CONT     // 1
 #define EVENT_RETURN              5
@@ -53,7 +27,6 @@
 
 // Event numbers block allocation
 // ** ALL NEW EVENT TYPES SHOULD BE ALLOCATED FROM BLOCKS LISTED HERE! **
-
 #define VC_EVENT_EVENTS_START                     100
 #define NET_EVENT_EVENTS_START                    200
 #define DISK_EVENT_EVENTS_START                   300
@@ -149,13 +122,9 @@ class EThread;
   ink_get_hrtime).
 
 */
-class Event:public Action
-{
+class Event:public Action {
 public:
-
-  ///////////////////////////////////////////////////////////
-  // Common Interface                                      //
-  ///////////////////////////////////////////////////////////
+  // Common Interface
 
   /**
      Reschedules this event immediately. Instructs the event object
@@ -165,7 +134,7 @@ public:
       of this event. See the Remarks section.
 
   */
-  void schedule_imm(int callback_event = EVENT_IMMEDIATE);
+  void schedule_imm(int callback_event=EVENT_IMMEDIATE);
 
   /**
      Reschedules this event to callback at time 'atimeout_at'.
@@ -173,10 +142,10 @@ public:
      specified in atimeout_at on the EventProcessor.
 
      @param atimeout_at Time at which to callcallback. See the Remarks section.
-     @param callback_event Event code to return at the completion of this event. See the Remarks section.
-
+     @param callback_event Event code to return at the completion of this event.
+            See the Remarks section.
   */
-  void schedule_at(ink_hrtime atimeout_at, int callback_event = EVENT_INTERVAL);
+  void schedule_at(ink_hrtime atimeout_at, int callback_event=EVENT_INTERVAL);
 
   /**
      Reschedules this event to callback at time 'atimeout_at'.
@@ -184,10 +153,10 @@ public:
      specified in atimeout_at on the EventProcessor.
 
      @param atimeout_in Time at which to callcallback. See the Remarks section.
-     @param callback_event Event code to return at the completion of this event. See the Remarks section.
-
+     @param callback_event Event code to return at the completion of this event.
+            See the Remarks section.
   */
-  void schedule_in(ink_hrtime atimeout_in, int callback_event = EVENT_INTERVAL);
+  void schedule_in(ink_hrtime atimeout_in, int callback_event=EVENT_INTERVAL);
 
   /**
      Reschedules this event to callback every 'aperiod'. Instructs
@@ -195,10 +164,10 @@ public:
      from now.
 
      @param aperiod Time period at which to callcallback. See the Remarks section.
-     @param callback_event Event code to return at the completion of this event. See the Remarks section.
-
+     @param callback_event Event code to return at the completion of this event.
+            See the Remarks section.
   */
-  void schedule_every(ink_hrtime aperiod, int callback_event = EVENT_INTERVAL);
+  void schedule_every(ink_hrtime aperiod, int callback_event=EVENT_INTERVAL);
 
   // inherited from Action::cancel
   // virtual void cancel(Continuation * c = NULL);
@@ -221,7 +190,6 @@ public:
     This field can be set when an event is created. It is returned
     as part of the Event structure to the continuation when handleEvent
     is called.
-
   */
   void *cookie;
 
@@ -230,7 +198,7 @@ public:
   Event();
 
 
-  Event *init(Continuation * c, ink_hrtime atimeout_at = 0, ink_hrtime aperiod = 0);
+  Event *init(Continuation* c, ink_hrtime atimeout_at=0, ink_hrtime aperiod=0);
 
 #ifdef ENABLE_TIME_TRACE
   ink_hrtime start_time;
@@ -245,34 +213,27 @@ private:
     Event & operator =(const Event &);
 
 public:
-  LINK(Event, link);
+    std::list<Event> link;
 
-  /*-------------------------------------------------------*\
-  | UNIX/non-NT Interface                                   |
-  \*-------------------------------------------------------*/
+  // UNIX/non-NT Interface
 
 #ifdef ONLY_USED_FOR_FIB_AND_BIN_HEAP
   void *node_pointer;
-  void set_node_pointer(void *x)
-  {
+
+  void set_node_pointer(void *x) {
     node_pointer = x;
   }
-  void *get_node_pointer()
-  {
+
+  void *get_node_pointer() {
     return node_pointer;
   }
 #endif
-
-#if defined(__GNUC__)
-  virtual ~ Event() {
+  virtual ~Event() {
   }
-#endif
 };
 
-//
 // Event Allocator
-//
-extern ClassAllocator<Event> eventAllocator;
+// extern ClassAllocator<Event> eventAllocator;
 
 #define EVENT_ALLOC(_a, _t) THREAD_ALLOC(_a, _t)
 #define EVENT_FREE(_p, _a, _t)   \

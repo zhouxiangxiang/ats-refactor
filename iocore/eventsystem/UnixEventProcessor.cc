@@ -1,26 +1,3 @@
-/** @file
-
-  A brief file description
-
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
- */
-
 #include "P_EventSystem.h"      /* MAGIC_EDITING_TAG */
 #include <sched.h>
 #if TS_USE_HWLOC
@@ -77,7 +54,7 @@ set_cpu(ink_cpuset_t *cpuset, int cpu)
 static bool
 bind_cpu(ink_cpuset_t *cpuset, ink_thread tid)
 {
-  if ( 0 != 
+  if ( 0 !=
 #if !defined(solaris)
     pthread_setaffinity_np(tid, sizeof(ink_cpuset_t), cpuset)
 #else
@@ -118,7 +95,9 @@ EventProcessor::spawn_event_threads(int n_threads, const char* et_name, size_t s
 
   n_thread_groups++;
   n_ethreads += n_threads;
-  Debug("iocore_thread", "Created thread group '%s' id %d with %d threads", et_name, new_thread_group_id, n_threads); 
+  Debug("iocore_thread",
+        "Created thread group '%s' id %d with %d threads",
+        et_name, new_thread_group_id, n_threads);
 
   return new_thread_group_id;
 }
@@ -173,7 +152,9 @@ EventProcessor::start(int n_event_threads, size_t stacksize)
   pu = hwloc_get_nbobjs_by_type(ink_get_topology(), HWLOC_OBJ_PU);
 #endif
 
-  Debug("iocore_thread", "socket: %d core: %d logical processor: %d affinity: %d", socket, cu, pu, affinity);
+  Debug("iocore_thread",
+        "socket: %d core: %d logical processor: %d affinity: %d",
+        socket, cu, pu, affinity);
 #endif
 
   for (i = first_thread; i < n_ethreads; i++) {
@@ -197,7 +178,10 @@ EventProcessor::start(int n_event_threads, size_t stacksize)
       }
 
       char debug_message[256];
-      int len = snprintf(debug_message, sizeof(debug_message), "setaffinity tid: %" PTR_FMT ", net thread: %u cpu:", tid, i);
+      int len = snprintf(debug_message,
+                         sizeof(debug_message),
+                         "setaffinity tid: %" PTR_FMT ", net thread: %u cpu:",
+                         tid, i);
       for (int cpu_count = 0; cpu_count < logical_ratio; cpu_count++) {
         int cpu = ((i - 1) * logical_ratio + cpu_count) % pu;
         set_cpu(&cpuset, cpu);
@@ -210,18 +194,21 @@ EventProcessor::start(int n_event_threads, size_t stacksize)
     }
 #endif
   }
-  Debug("iocore_thread", "Created event thread group id %d with %d threads", ET_CALL, n_event_threads);
+  Debug("iocore_thread",
+        "Created event thread group id %d with %d threads",
+        ET_CALL, n_event_threads);
   return 0;
 }
 
 void
-EventProcessor::shutdown()
-{
+EventProcessor::shutdown() {
 }
 
 Event *
-EventProcessor::spawn_thread(Continuation *cont, const char* thr_name, size_t stacksize, ink_sem *sem)
-{
+EventProcessor::spawn_thread(Continuation *cont,
+                             const char* thr_name,
+                             size_t stacksize,
+                             ink_sem *sem) {
   ink_release_assert(n_dthreads < MAX_EVENT_THREADS);
   Event *e = eventAllocator.alloc();
 

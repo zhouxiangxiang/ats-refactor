@@ -1,33 +1,6 @@
-/** @file
-
-  A brief file description
-
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
- */
-
-/****************************************************************************
-
+/**
   ProxyAllocator.h
-
-
-
-*****************************************************************************/
+ */
 #ifndef _I_ProxyAllocator_h_
 #define _I_ProxyAllocator_h_
 
@@ -37,16 +10,15 @@ class EThread;
 
 extern int thread_freelist_size;
 
-struct ProxyAllocator
-{
+struct ProxyAllocator {
   int allocated;
   void *freelist;
 
   ProxyAllocator():allocated(0), freelist(0) { }
 };
 
-template<class C> inline C * thread_alloc(ClassAllocator<C> &a, ProxyAllocator & l)
-{
+template<class C>
+inline C * thread_alloc(ClassAllocator<C> &a, ProxyAllocator & l) {
 #if TS_USE_FREELIST && !TS_USE_RECLAIMABLE_FREELIST
   if (l.freelist) {
     C *v = (C *) l.freelist;
@@ -61,8 +33,8 @@ template<class C> inline C * thread_alloc(ClassAllocator<C> &a, ProxyAllocator &
   return a.alloc();
 }
 
-template<class C> inline C * thread_alloc_init(ClassAllocator<C> &a, ProxyAllocator & l)
-{
+template<class C>
+inline C * thread_alloc_init(ClassAllocator<C> &a, ProxyAllocator & l) {
 #if TS_USE_FREELIST && !TS_USE_RECLAIMABLE_FREELIST
   if (l.freelist) {
     C *v = (C *) l.freelist;
@@ -77,21 +49,18 @@ template<class C> inline C * thread_alloc_init(ClassAllocator<C> &a, ProxyAlloca
   return a.alloc();
 }
 
-template<class C> inline void
-thread_free(ClassAllocator<C> &a, C *p)
-{
+template<class C>
+inline void thread_free(ClassAllocator<C> &a, C *p) {
   a.free(p);
 }
 
 static inline void
-thread_free(Allocator &a, void *p)
-{
+thread_free(Allocator &a, void *p) {
   a.free_void(p);
 }
 
-template<class C> inline void
-thread_freeup(ClassAllocator<C> &a, ProxyAllocator & l)
-{
+template<class C>
+inline void thread_freeup(ClassAllocator<C> &a, ProxyAllocator & l) {
   while (l.freelist) {
     C *v = (C *) l.freelist;
     l.freelist = *(C **) l.freelist;

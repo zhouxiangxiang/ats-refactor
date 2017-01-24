@@ -1,26 +1,3 @@
-/** @file
-
-  A brief file description
-
-  @section license License
-
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
- */
-
 #ifndef _P_UnixEventProcessor_h_
 #define _P_UnixEventProcessor_h_
 #include "I_EventProcessor.h"
@@ -29,12 +6,10 @@ const int LOAD_BALANCE_INTERVAL = 1;
 
 
 TS_INLINE
-EventProcessor::EventProcessor():
-n_ethreads(0),
-n_thread_groups(0),
-n_dthreads(0),
-thread_data_used(0)
-{
+EventProcessor::EventProcessor(): n_ethreads(0),
+                                  n_thread_groups(0),
+                                  n_dthreads(0),
+                                  thread_data_used(0) {
   memset(all_ethreads, 0, sizeof(all_ethreads));
   memset(all_dthreads, 0, sizeof(all_dthreads));
   memset(n_threads_for_type, 0, sizeof(n_threads_for_type));
@@ -42,11 +17,10 @@ thread_data_used(0)
 }
 
 TS_INLINE off_t
-EventProcessor::allocate(int size)
-{
+EventProcessor::allocate(int size) {
   static off_t start = INK_ALIGN(offsetof(EThread, thread_private), 16);
   static off_t loss = start - offsetof(EThread, thread_private);
-  size = INK_ALIGN(size, 16);       // 16 byte alignment
+  size = INK_ALIGN(size, 16); // 16 byte alignment
 
   int old;
   do {
@@ -59,8 +33,7 @@ EventProcessor::allocate(int size)
 }
 
 TS_INLINE EThread *
-EventProcessor::assign_thread(EventType etype)
-{
+EventProcessor::assign_thread(EventType etype) {
   int next;
 
   ink_assert(etype < MAX_EVENT_TYPES);
@@ -72,8 +45,7 @@ EventProcessor::assign_thread(EventType etype)
 }
 
 TS_INLINE Event *
-EventProcessor::schedule(Event * e, EventType etype, bool fast_signal)
-{
+EventProcessor::schedule(Event * e, EventType etype, bool fast_signal) {
   ink_assert(etype < MAX_EVENT_TYPES);
   e->ethread = assign_thread(etype);
   if (e->continuation->mutex)
@@ -86,8 +58,10 @@ EventProcessor::schedule(Event * e, EventType etype, bool fast_signal)
 
 
 TS_INLINE Event *
-EventProcessor::schedule_imm_signal(Continuation * cont, EventType et, int callback_event, void *cookie)
-{
+EventProcessor::schedule_imm_signal(Continuation * cont,
+                                    EventType et,
+                                    int callback_event,
+                                    void *cookie) {
   Event *e = eventAllocator.alloc();
 
   ink_assert(et < MAX_EVENT_TYPES);
@@ -100,8 +74,10 @@ EventProcessor::schedule_imm_signal(Continuation * cont, EventType et, int callb
 }
 
 TS_INLINE Event *
-EventProcessor::schedule_imm(Continuation * cont, EventType et, int callback_event, void *cookie)
-{
+EventProcessor::schedule_imm(Continuation * cont,
+                             EventType et,
+                             int callback_event,
+                             void *cookie) {
   Event *e = eventAllocator.alloc();
 
   ink_assert(et < MAX_EVENT_TYPES);
@@ -114,8 +90,11 @@ EventProcessor::schedule_imm(Continuation * cont, EventType et, int callback_eve
 }
 
 TS_INLINE Event *
-EventProcessor::schedule_at(Continuation * cont, ink_hrtime t, EventType et, int callback_event, void *cookie)
-{
+EventProcessor::schedule_at(Continuation * cont,
+                            ink_hrtime t,
+                            EventType et,
+                            int callback_event,
+                            void *cookie) {
   Event *e = eventAllocator.alloc();
 
   ink_assert(t > 0);
@@ -126,8 +105,11 @@ EventProcessor::schedule_at(Continuation * cont, ink_hrtime t, EventType et, int
 }
 
 TS_INLINE Event *
-EventProcessor::schedule_in(Continuation * cont, ink_hrtime t, EventType et, int callback_event, void *cookie)
-{
+EventProcessor::schedule_in(Continuation * cont,
+                            ink_hrtime t,
+                            EventType et,
+                            int callback_event,
+                            void *cookie) {
   Event *e = eventAllocator.alloc();
 
   ink_assert(et < MAX_EVENT_TYPES);
@@ -137,8 +119,11 @@ EventProcessor::schedule_in(Continuation * cont, ink_hrtime t, EventType et, int
 }
 
 TS_INLINE Event *
-EventProcessor::schedule_every(Continuation * cont, ink_hrtime t, EventType et, int callback_event, void *cookie)
-{
+EventProcessor::schedule_every(Continuation * cont,
+                               ink_hrtime t,
+                               EventType et,
+                               int callback_event,
+                               void *cookie) {
   Event *e = eventAllocator.alloc();
 
   ink_assert(t != 0);
@@ -150,6 +135,5 @@ EventProcessor::schedule_every(Continuation * cont, ink_hrtime t, EventType et, 
   else
     return schedule(e->init(cont, ink_get_based_hrtime() + t, t), et);
 }
-
 
 #endif

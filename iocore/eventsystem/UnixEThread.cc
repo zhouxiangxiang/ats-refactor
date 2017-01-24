@@ -39,8 +39,8 @@ struct AIOCallback;
 #define THREAD_MAX_HEARTBEAT_MSECONDS	60
 #define NO_ETHREAD_ID                   -1
 
-EThread::EThread()
-  : generator((uint64_t)ink_get_hrtime_internal() ^ (uint64_t)(uintptr_t)this),
+EThread::EThread():
+   generator((uint64_t)ink_get_hrtime_internal() ^ (uint64_t)(uintptr_t)this),
    ethreads_to_be_signalled(NULL),
    n_ethreads_to_be_signalled(0),
    main_accept_index(-1),
@@ -163,21 +163,20 @@ EThread::process_event(Event * e, int calling_code)
   }
 }
 
-//
-// void  EThread::execute()
-//
-// Execute loops forever on:
-// Find the earliest event.
-// Sleep until the event time or until an earlier event is inserted
-// When its time for the event, try to get the appropriate continuation
-// lock. If successful, call the continuation, otherwise put the event back
-// into the queue.
-//
+/**
+ void  EThread::execute()
+
+ Execute loops forever on:
+ Find the earliest event.
+ Sleep until the event time or until an earlier event is inserted
+ When its time for the event, try to get the appropriate continuation lock.
+ If successful, call the continuation, otherwise put the event back into the
+ queue.
+ */
 
 void
 EThread::execute() {
   switch (tt) {
-
     case REGULAR: {
       Event *e;
       Que(Event, link) NegativeQueue;
@@ -194,8 +193,10 @@ EThread::execute() {
           else if (!e->timeout_at) { // IMMEDIATE
             ink_assert(e->period == 0);
             process_event(e, e->callback_event);
-          } else if (e->timeout_at > 0) // INTERVAL
+          }
+          else if (e->timeout_at > 0) { // INTERVAL
             EventQueue.enqueue(e, cur_time);
+          }
           else { // NEGATIVE
             Event *p = NULL;
             Event *a = NegativeQueue.head;
@@ -269,7 +270,8 @@ EThread::execute() {
             process_event(e, EVENT_POLL);
           if (!INK_ATOMICLIST_EMPTY(EventQueueExternal.al))
             EventQueueExternal.dequeue_timed(cur_time, next_time, false);
-        } else {                // Means there are no negative events
+        }
+        else {                // Means there are no negative events
           next_time = EventQueue.earliest_timeout();
           ink_hrtime sleep_time = next_time - cur_time;
           if (sleep_time > THREAD_MAX_HEARTBEAT_MSECONDS * HRTIME_MSECOND) {
