@@ -36,26 +36,16 @@ class UnixNetVConnection;
 struct UnixNetProcessor:public NetProcessor
 {
 public:
-  virtual Action *accept_internal (
-    Continuation * cont,
-    int fd,
-    AcceptOptions const &opt
-  );
+  virtual Action *accept_internal(Continuation* cont,
+                                  int fd, AcceptOptions const &opt);
 
-  Action *connect_re_internal(
-    Continuation * cont,
-    sockaddr const* target,
-    NetVCOptions * options = NULL
-  );
-  Action *connect(
-    Continuation * cont,
-    UnixNetVConnection ** vc,
-    sockaddr const* target,
-    NetVCOptions * opt = NULL
-  );
+  Action *connect_re_internal(Continuation* cont, sockaddr const* target,
+                              NetVCOptions* options=NULL);
+  Action *connect(Continuation* cont, UnixNetVConnection** vc,
+                  sockaddr const* target, NetVCOptions* opt = NULL);
 
-  // Virtual function allows etype to be upgraded to ET_SSL for SSLNetProcessor.  Does
-  // nothing for NetProcessor
+  // Virtual function allows etype to be upgraded to ET_SSL for SSLNetProcessor.
+  // Does nothing for NetProcessor
   virtual void upgradeEtype(EventType & /* etype ATS_UNUSED */) { };
 
   // Functions all THREAD_FREE and THREAD_ALLOC to be performed
@@ -81,11 +71,8 @@ public:
 
 
 TS_INLINE Action *
-NetProcessor::connect_re(
-  Continuation * cont,
-  sockaddr const* addr,
-  NetVCOptions * opts
-) {
+NetProcessor::connect_re(Continuation* cont,
+                         sockaddr const* addr, NetVCOptions* opts) {
   return static_cast<UnixNetProcessor *>(this)->connect_re_internal(cont, addr, opts);
 }
 
