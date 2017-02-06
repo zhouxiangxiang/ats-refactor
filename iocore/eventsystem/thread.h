@@ -71,7 +71,7 @@ static const int DEFAULT_STACKSIZE = 1048576; // 1MB
   but even then you would probably deal with processor functions and
   not the Thread object itself.
 */
-class Thread: std::thread {
+class Thread : std::thread {
 public:
   Thread();
   virtual ~Thread();

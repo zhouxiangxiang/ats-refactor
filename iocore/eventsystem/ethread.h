@@ -79,8 +79,12 @@ public:
       of this callback.
 
   */
-  Event *schedule_imm(Continuation *c, int callback_event = EVENT_IMMEDIATE, void *cookie = NULL);
-  Event *schedule_imm_signal(Continuation *c, int callback_event = EVENT_IMMEDIATE, void *cookie = NULL);
+  Event *schedule_imm(Continuation *c,
+                      int callback_event=EVENT_IMMEDIATE,
+                      void *cookie=NULL);
+  Event *schedule_imm_signal(Continuation *c,
+                             int callback_event=EVENT_IMMEDIATE,
+                             void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -102,7 +106,9 @@ public:
 
   */
   Event *schedule_at(Continuation *c,
-                     ink_hrtime atimeout_at, int callback_event = EVENT_INTERVAL, void *cookie = NULL);
+                     ink_hrtime atimeout_at,
+                     int callback_event=EVENT_INTERVAL,
+                     void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -123,7 +129,9 @@ public:
 
   */
   Event *schedule_in(Continuation *c,
-                     ink_hrtime atimeout_in, int callback_event = EVENT_INTERVAL, void *cookie = NULL);
+                     ink_hrtime atimeout_in,
+                     int callback_event=EVENT_INTERVAL,
+                     void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -144,7 +152,10 @@ public:
       of this callback.
 
   */
-  Event *schedule_every(Continuation *c, ink_hrtime aperiod, int callback_event = EVENT_INTERVAL, void *cookie = NULL);
+  Event *schedule_every(Continuation *c,
+                        ink_hrtime aperiod,
+                        int callback_event=EVENT_INTERVAL,
+                        void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -162,7 +173,9 @@ public:
       of this callback.
 
   */
-  Event *schedule_imm_local(Continuation *c, int callback_event = EVENT_IMMEDIATE, void *cookie = NULL);
+  Event *schedule_imm_local(Continuation *c,
+                            int callback_event=EVENT_IMMEDIATE,
+                            void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -184,7 +197,9 @@ public:
 
   */
   Event *schedule_at_local(Continuation *c,
-                           ink_hrtime atimeout_at, int callback_event = EVENT_INTERVAL, void *cookie = NULL);
+                           ink_hrtime atimeout_at,
+                           int callback_event=EVENT_INTERVAL,
+                           void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -206,7 +221,9 @@ public:
 
   */
   Event *schedule_in_local(Continuation *c,
-                           ink_hrtime atimeout_in, int callback_event = EVENT_INTERVAL, void *cookie = NULL);
+                           ink_hrtime atimeout_in,
+                           int callback_event=EVENT_INTERVAL,
+                           void *cookie=NULL);
 
   /**
     Schedules the continuation on this EThread to receive an event
@@ -227,23 +244,20 @@ public:
 
   */
   Event *schedule_every_local(Continuation *c,
-                              ink_hrtime aperiod, int callback_event = EVENT_INTERVAL, void *cookie = NULL);
+                              ink_hrtime aperiod,
+                              int callback_event=EVENT_INTERVAL,
+                              void *cookie=NULL);
 
-  /* private */
-
+  // private
   Event *schedule_local(Event *e);
-
   InkRand generator;
 
 private:
   // prevent unauthorized copies (Not implemented)
-  EThread(const EThread &);
-  EThread & operator =(const EThread &);
+  EThread(const EThread &)=delete;
+  EThread& operator =(const EThread &)=delete;
 
-  /*-------------------------------------------------------*\
-  |  UNIX Interface                                         |
-  \*-------------------------------------------------------*/
-
+  //  UNIX Interface
 public:
   EThread();
   EThread(ThreadType att, int anid);
@@ -251,15 +265,18 @@ public:
   virtual ~EThread();
 
   Event *schedule_spawn(Continuation *cont);
-  Event *schedule(Event *e, bool fast_signal = false);
+  Event *schedule(Event *e, bool fast_signal=false);
 
-  /** Block of memory to allocate thread specific data e.g. stat system arrays. */
+  /**
+     Block of memory to allocate thread specific data e.g.
+     stat system arrays.
+  */
   char thread_private[PER_THREAD_DATA];
 
-  /** Private Data for the Disk Processor. */
+  // Private Data for the Disk Processor.
   DiskHandler *diskHandler;
 
-  /** Private Data for AIO. */
+  // Private Data for AIO.
   Que(Continuation, link) aio_ops;
 
   ProtectedQueue EventQueueExternal;
@@ -277,7 +294,6 @@ public:
   void set_event_type(EventType et);
 
   // Private Interface
-
   void execute();
   void process_event(Event *e, int calling_code);
   void free_event(Event *e);
@@ -291,8 +307,8 @@ public:
   EventIO *ep;
 
   ThreadType tt;
-  Event *oneevent;              // For dedicated event thread
-  ink_sem *eventsem;            // For dedicated event thread
+  Event *oneevent;  // For dedicated event thread
+  ink_sem *eventsem;// For dedicated event thread
 
   SessionBucket* l1_hash;
 };
@@ -300,17 +316,17 @@ public:
 /**
   This is used so that we dont use up operator new(size_t, void *)
   which users might want to define for themselves.
-
 */
 class ink_dummy_for_new {
 };
 
-inline void *operator
-new(size_t, ink_dummy_for_new *p)
-{
+inline void*
+operator new(size_t, ink_dummy_for_new *p) {
   return (void *) p;
 }
+
 #define ETHREAD_GET_PTR(thread, offset) ((void*)((char*)(thread)+(offset)))
 
 extern EThread *this_ethread();
+
 #endif /*_EThread_h_*/

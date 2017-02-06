@@ -3,10 +3,10 @@
  */
 #include <time.h>
 
-#include <iostream>
-#include <mutex>
 #include <cstring>
 #include <cassert>
+#include <mutex>
+#include <iostream>
 
 #include "./headers.h"
 #include "./thread.h"
@@ -66,26 +66,24 @@ ink_thread_create(void *(*f) (void *),
                   void *a,
                   int detached=0,
                   size_t stacksize=0) {
-  ink_thread t;
-  int ret;
-  pthread_attr_t attr;
 
+  pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
-
   if (stacksize) {
     pthread_attr_setstacksize(&attr, stacksize);
   }
-
   if (detached) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
   }
 
-  std::cout << "begin: " << time(NULL) << std::endl;
-  ret = pthread_create(&t, &attr, f, a);
+  ink_thread t;
+  int ret = pthread_create(&t,    // thread
+                           &attr, // attributes
+                           f,     // start routine
+                           a);    // arguments
+
   pthread_join(t, NULL);
-  std::cout << "end:   " << time(NULL) << std::endl;
-  assert(ret == 0);
   pthread_attr_destroy(&attr);
 
   return ret ? (ink_thread) 0 : t;
@@ -93,29 +91,35 @@ ink_thread_create(void *(*f) (void *),
 
 
 ink_thread
-Thread::start(const char* name, size_t stacksize, ThreadFunction f, void *a) {
+Thread::start(const char* name,
+              size_t stacksize,
+              ThreadFunction f,
+              void *a) { /* thread arguments*/
+
   unsigned t_data_size = sizeof(thread_data_internal);
   thread_data_internal *p = (thread_data_internal *)malloc(t_data_size);
+  p->f = f;     // function
+  p->a = a;     // arguments
+  p->me = this; // thread
 
-  p->f = f;
-  p->a = a;
-  p->me = this;
+  // set thread name
   memset(p->name, 0, MAX_THREAD_NAME_LENGTH);
   strncpy(p->name, name, MAX_THREAD_NAME_LENGTH);
-  tid = ink_thread_create(spawn_thread_internal, (void *) p, 0, stacksize);
+
+  // create thread
+  tid = ink_thread_create(spawn_thread_internal, // start routine
+                          (void *) p,            // arguments
+                          0,                     // detach or not
+                          stacksize);            // thread stacksize
   return tid;
 }
 
 void
 Thread::set_specific() {
-    s_thread_data_key = this;
+  s_thread_data_key = this;
 }
 
 Thread*
 Thread::this_thread() const {
   return s_thread_data_key;
 }
-
-
-
-
