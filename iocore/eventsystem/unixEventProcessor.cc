@@ -52,8 +52,7 @@ set_cpu(ink_cpuset_t *cpuset, int cpu)
 
 
 static bool
-bind_cpu(ink_cpuset_t *cpuset, ink_thread tid)
-{
+bind_cpu(ink_cpuset_t *cpuset, ink_thread tid) {
   if ( 0 !=
 #if !defined(solaris)
     pthread_setaffinity_np(tid, sizeof(ink_cpuset_t), cpuset)
@@ -68,8 +67,7 @@ bind_cpu(ink_cpuset_t *cpuset, ink_thread tid)
 #endif
 
 EventType
-EventProcessor::spawn_event_threads(int n_threads, const char* et_name, size_t stacksize)
-{
+EventProcessor::spawn_event_threads(int n_threads, const char* et_name, size_t stacksize) {
   char thr_name[MAX_THREAD_NAME_LENGTH];
   EventType new_thread_group_id;
   int i;
@@ -106,8 +104,7 @@ EventProcessor::spawn_event_threads(int n_threads, const char* et_name, size_t s
 class EventProcessor eventProcessor;
 
 int
-EventProcessor::start(int n_event_threads, size_t stacksize)
-{
+EventProcessor::start(int n_event_threads, size_t stacksize) {
   char thr_name[MAX_THREAD_NAME_LENGTH];
   int i;
 

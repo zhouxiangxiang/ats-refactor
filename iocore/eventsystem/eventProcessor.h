@@ -72,6 +72,11 @@ class EThread;
 class EventProcessor:public Processor
 {
 public:
+  EventProcessor();
+
+  // prevent unauthorized copies (Not implemented)
+  EventProcessor(const EventProcessor &)=delete;
+  EventProcessor & operator =(const EventProcessor &)=delete;
 
   /**
     Spawn an additional thread for calling back the continuation. Spawns a
@@ -220,8 +225,6 @@ public:
                           ink_hrtime aperiod,
                           int callback_event=EVENT_INTERVAL);
 
-  EventProcessor();
-
   /**
     Initializes the EventProcessor and its associated threads. Spawns the
     specified number of threads, initializes their state information and
@@ -245,6 +248,12 @@ public:
   */
   off_t allocate(int size);
 
+  // Unix & non NT Interface
+  Event * schedule(Event * e, EventType etype, bool fast_signal=false);
+  EThread *assign_thread(EventType etype);
+  EThread *all_dthreads[MAX_EVENT_THREADS];
+
+public:
   /**
     An array of pointers to all of the EThreads handled by the EventProcessor.
     An array of pointers to all of the EThreads created throughout the
@@ -276,18 +285,6 @@ public:
     all the thread groups (event types) created for this EventProcessor.
   */
   int n_thread_groups;
-
-private:
-  // prevent unauthorized copies (Not implemented)
-  EventProcessor(const EventProcessor &);
-  EventProcessor & operator =(const EventProcessor &);
-
-public:
-  // Unix & non NT Interface
-  Event * schedule(Event * e, EventType etype, bool fast_signal = false);
-  EThread *assign_thread(EventType etype);
-
-  EThread *all_dthreads[MAX_EVENT_THREADS];
 
   // Number of dedicated threads
   int n_dthreads;

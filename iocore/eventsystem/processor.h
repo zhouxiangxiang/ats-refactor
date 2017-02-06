@@ -31,8 +31,7 @@ class Thread;
    Most of such derived classes, provide a singleton object and is common case
    to have a single instance in that application scope.
 */
-class Processor
-{
+class Processor {
 public:
   virtual ~Processor();
 
@@ -56,8 +55,7 @@ public:
     This function attemps to stop the processor. Please refer to the
     documentation on each processor to determine if it is supported.
   */
-  virtual void shutdown()
-  {
+  virtual void shutdown() {
   }
 
   /**
